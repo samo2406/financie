@@ -39,7 +39,13 @@ export function renderSettings(root) {
 
     <section class="card">
       <h3>Obchody → kategórie <span class="muted">(auto-kategorizácia pri zadávaní)</span></h3>
-      <input id="m-search" type="search" placeholder="Hľadať obchod…">
+      <div class="filters">
+        <input id="m-search" type="search" placeholder="Hľadať obchod…">
+        <select id="m-cat-filter">
+          <option value="">Všetky kategórie</option>
+          ${cats.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('')}
+        </select>
+      </div>
       <div id="merchant-list-box">
         ${merchants.map(m => merchantRow(m, cats)).join('')}
       </div>
@@ -86,9 +92,25 @@ export function renderSettings(root) {
 
   // obchody
   const box = root.querySelector('#merchant-list-box');
+  const mSearch = root.querySelector('#m-search');
+  const mCatFilter = root.querySelector('#m-cat-filter');
+
+  const applyMerchantFilter = () => {
+    const q = mSearch.value.trim().toLowerCase();
+    const cat = mCatFilter.value;
+    box.querySelectorAll('.merchant-row').forEach(r => {
+      const nameMatch = r.dataset.name.toLowerCase().includes(q);
+      const catMatch = !cat || r.querySelector('select').value === cat;
+      r.style.display = nameMatch && catMatch ? '' : 'none';
+    });
+  };
+
   box.addEventListener('change', e => {
     const row = e.target.closest('.merchant-row');
-    if (row && e.target.tagName === 'SELECT') db.setMerchantCategory(row.dataset.name, e.target.value);
+    if (row && e.target.tagName === 'SELECT') {
+      db.setMerchantCategory(row.dataset.name, e.target.value);
+      applyMerchantFilter();
+    }
   });
   box.addEventListener('click', e => {
     if (e.target.classList.contains('del')) {
@@ -96,11 +118,8 @@ export function renderSettings(root) {
       rerender(root);
     }
   });
-  root.querySelector('#m-search').addEventListener('input', e => {
-    const q = e.target.value.trim().toLowerCase();
-    box.querySelectorAll('.merchant-row').forEach(r =>
-      r.style.display = r.dataset.name.toLowerCase().includes(q) ? '' : 'none');
-  });
+  mSearch.addEventListener('input', applyMerchantFilter);
+  mCatFilter.addEventListener('change', applyMerchantFilter);
 
   // záloha
   root.querySelector('#export').addEventListener('click', () => {

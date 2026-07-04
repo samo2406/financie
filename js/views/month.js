@@ -22,7 +22,8 @@ export function renderMonth(root) {
   const pctS = Math.round(ratioS * 100);
 
   const catOptions = cats.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
-  const merchantList = db.getMerchants().map(m => `<option value="${esc(m.name)}">`).join('');
+  // do našepkávania nedávame jednorazové obchody (kategória Ostatné)
+  const merchantList = db.getMerchants().filter(m => m.category !== 'ostatne').map(m => `<option value="${esc(m.name)}">`).join('');
 
   root.appendChild(el(`
   <div class="month-view">

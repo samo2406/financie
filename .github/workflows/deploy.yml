@@ -10,10 +10,11 @@ permissions:
   pages: write
   id-token: write
 
-# jeden deployment naraz — zabráni konfliktom pri rýchlych pushoch za sebou
+# jeden deployment naraz; prebiehajúci sa nechá dobehnúť (odporúčanie GitHub Pages),
+# rušenie in-progress deployu vie spôsobiť zlyhanie kroku deploy-pages
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:

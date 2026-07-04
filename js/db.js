@@ -23,8 +23,14 @@ export async function getSession() {
   return data.session;
 }
 export function onAuth(cb) { supabase.auth.onAuthStateChange((_e, s) => cb(s)); }
-export async function signIn(email, password) {
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+// prihlásenie menom aj e-mailom: k holému menu (bez @) sa doplní fixná doména
+const LOGIN_DOMAIN = '@lovky.local';
+export function toEmail(name) {
+  name = name.trim();
+  return name.includes('@') ? name : name.toLowerCase() + LOGIN_DOMAIN;
+}
+export async function signIn(name, password) {
+  const { error } = await supabase.auth.signInWithPassword({ email: toEmail(name), password });
   if (error) throw error;
 }
 export async function signOut() { await supabase.auth.signOut(); }

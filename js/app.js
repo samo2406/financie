@@ -29,7 +29,7 @@ function showLogin(message) {
     <form class="login card">
       <h2>💶 Lovky</h2>
       <p class="muted">Prihlás sa pre prístup k výdavkom.</p>
-      <input name="email" type="email" placeholder="E-mail" autocomplete="username" required>
+      <input name="email" type="text" placeholder="Meno" autocomplete="username" required>
       <input name="password" type="password" placeholder="Heslo" autocomplete="current-password" required>
       <button class="primary" type="submit">Prihlásiť sa</button>
       <p class="login-error">${message ? esc(message) : ''}</p>
@@ -53,7 +53,8 @@ function showLogin(message) {
 async function renderAuthBar() {
   const bar = document.getElementById('auth-bar');
   const email = await db.currentEmail();
-  bar.innerHTML = `<span class="who">${esc(email)}</span>
+  const who = email.replace(/@lovky\.local$/, '');
+  bar.innerHTML = `<span class="who">${esc(who)}</span>
     <button id="refresh" title="Načítať najnovšie dáta">🔄</button>
     <button id="logout">Odhlásiť</button>`;
   bar.querySelector('#logout').addEventListener('click', async () => { await db.signOut(); });

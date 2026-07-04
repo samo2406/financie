@@ -106,8 +106,6 @@ export function renderMonth(root) {
     month = b.dataset.month;
     rerender(root);
   }));
-  const activeChip = root.querySelector('.mon-chip.active');
-  if (activeChip) activeChip.scrollIntoView({ inline: 'center', block: 'nearest' });
 
   // --- pridávanie ---
   root.querySelectorAll('.add-row').forEach(form => {

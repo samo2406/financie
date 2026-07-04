@@ -24,7 +24,7 @@ export function renderCharts(root) {
     <section class="card"><h3>Kategórie po mesiacoch</h3><canvas id="ch-stacked"></canvas></section>
     <div class="chart-pair">
       <section class="card"><h3>Rozdelenie podľa kategórií</h3><canvas id="ch-donut"></canvas></section>
-      <section class="card"><h3>Kto koľko zaplatil</h3><canvas id="ch-person"></canvas></section>
+      <section class="card"><h3>Najväčšie výdavky podľa obchodu</h3><canvas id="ch-merchants"></canvas></section>
     </div>
   </div>`));
 
@@ -88,18 +88,30 @@ export function renderCharts(root) {
     options: { plugins: { tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${eur(ctx.parsed)}` } } } },
   }));
 
-  // 4. porovnanie osôb po mesiacoch
-  const people = db.getPeople();
-  charts.push(new Chart(root.querySelector('#ch-person'), {
+  // 4. najväčšie výdavky podľa obchodu (top 12, farba podľa kategórie)
+  const byMerchant = {};
+  for (const e of filtered) {
+    const name = e.merchant || '—';
+    if (!byMerchant[name]) byMerchant[name] = { total: 0, cat: e.category };
+    byMerchant[name].total += e.amount;
+  }
+  const top = Object.entries(byMerchant).sort((a, b) => b[1].total - a[1].total).slice(0, 12);
+  const catColor = id => (cats.find(c => c.id === id) || {}).color || '#868e96';
+  charts.push(new Chart(root.querySelector('#ch-merchants'), {
     type: 'bar',
     data: {
-      labels,
-      datasets: [
-        { label: people.S, data: sumBy(e => e.person === 'S'), backgroundColor: '#4dabf7', borderRadius: 2 },
-        { label: people.M, data: sumBy(e => e.person === 'M'), backgroundColor: '#f783ac', borderRadius: 2 },
-      ],
+      labels: top.map(([name]) => name),
+      datasets: [{
+        data: top.map(([, v]) => round2(v.total)),
+        backgroundColor: top.map(([, v]) => catColor(v.cat)),
+        borderRadius: 3,
+      }],
     },
-    options: { scales: { x: scale, y: scale }, plugins: { tooltip: { callbacks: { label: eurTip } } } },
+    options: {
+      indexAxis: 'y',
+      scales: { x: scale, y: { ...scale, ticks: { color: tickColor, autoSkip: false } } },
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${eur(ctx.parsed.x)}` } } },
+    },
   }));
 }
 

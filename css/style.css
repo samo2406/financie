@@ -135,6 +135,8 @@ main { max-width: 1100px; margin: 0 auto; padding: 20px; }
   gap: 16px;
 }
 @media (max-width: 760px) { .columns { grid-template-columns: 1fr; } }
+/* bez min-width:0 by karta nešla zmenšiť pod obsah a pretláčala by grid cez okraj */
+.person-col { min-width: 0; }
 
 table.expenses { width: 100%; border-collapse: collapse; }
 table.expenses td, table.expenses th {

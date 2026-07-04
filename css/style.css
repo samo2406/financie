@@ -1,0 +1,263 @@
+:root {
+  --bg: #12151c;
+  --surface: #1a1f2a;
+  --surface2: #222836;
+  --border: #2c3444;
+  --text: #e6e9f0;
+  --muted: #8b93a7;
+  --accent: #4dabf7;
+  --danger: #ff6b6b;
+  --ok: #51cf66;
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 15px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 12px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  flex-wrap: wrap;
+}
+
+h1 { font-size: 20px; margin: 0; }
+h2 { margin: 0; font-size: 22px; }
+h3 { margin: 0 0 12px; font-size: 15px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+
+#tabs { display: flex; gap: 4px; }
+#tabs button {
+  background: none;
+  border: none;
+  color: var(--muted);
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
+}
+#tabs button:hover { background: var(--surface2); color: var(--text); }
+#tabs button.active { background: var(--accent); color: #0b1520; font-weight: 600; }
+
+main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+/* --- mesiac --- */
+.month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.nav-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 20px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.nav-btn:hover { background: var(--accent); color: #0b1520; }
+
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 760px) { .columns { grid-template-columns: 1fr; } }
+
+table.expenses { width: 100%; border-collapse: collapse; }
+table.expenses td, table.expenses th {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+table.expenses th { color: var(--muted); font-weight: 600; font-size: 13px; }
+table.expenses tr:last-child td { border-bottom: none; }
+td.num, th.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+td.empty { text-align: center; padding: 16px; }
+
+.chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 12px;
+  background: color-mix(in srgb, var(--c) 22%, transparent);
+  color: var(--c);
+  border: 1px solid color-mix(in srgb, var(--c) 45%, transparent);
+  white-space: nowrap;
+}
+
+button.del {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+button.del:hover { color: var(--danger); background: var(--surface2); }
+
+.add-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.add-row input[name=merchant] { flex: 2; min-width: 0; }
+.add-row input[name=amount] { flex: 1; min-width: 0; }
+.add-row input[name=name] { flex: 1; }
+
+input, select {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+}
+input:focus, select:focus { outline: 1px solid var(--accent); }
+input[type=color] { padding: 2px; width: 38px; height: 34px; cursor: pointer; }
+
+button.primary {
+  background: var(--accent);
+  color: #0b1520;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+button.primary:hover { filter: brightness(1.1); }
+
+button.danger {
+  background: none;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+button.danger:hover { background: var(--danger); color: #fff; }
+
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 13px;
+}
+.link-btn:hover { color: var(--danger); }
+
+/* --- vyúčtovanie --- */
+.settle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.stat {
+  background: var(--surface2);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.stat span { display: block; color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+.stat strong { font-size: 17px; font-variant-numeric: tabular-nums; }
+.ratio-edit input { width: 58px; padding: 4px 6px; text-align: right; }
+
+.settle-result { text-align: center; }
+.settle-result p { margin: 8px 0; font-size: 17px; }
+.owe { color: var(--danger); font-size: 20px; }
+.settled { color: var(--ok); }
+
+/* --- história --- */
+.filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.filters select, .filters input { flex: 1; min-width: 140px; }
+
+.summary-bar {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--surface2);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 15px;
+}
+.summary-bar strong { font-size: 17px; }
+
+table.full { background: var(--surface); border-radius: var(--radius); overflow: hidden; }
+table.full td, table.full th { padding: 8px 12px; }
+
+/* --- grafy --- */
+.charts-view section canvas { max-height: 340px; }
+.chart-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 760px) { .chart-pair { grid-template-columns: 1fr; } }
+.chart-pair canvas { max-height: 300px; }
+
+/* --- nastavenia --- */
+.settings-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: end;
+}
+.settings-row label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); }
+
+.cat-row, .merchant-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.cat-row:last-child, .merchant-row:last-child { border-bottom: none; }
+.merchant-row span { flex: 1; }
+#merchant-list-box { max-height: 420px; overflow-y: auto; margin-top: 10px; }
+#m-search { width: 100%; }
+
+.file-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.file-btn:hover { border-color: var(--accent); }
+
+.muted { color: var(--muted); }
+.center { text-align: center; }
+.error { color: var(--danger); text-align: center; padding: 40px; }

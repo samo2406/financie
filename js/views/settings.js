@@ -1,0 +1,143 @@
+import * as db from '../db.js';
+import { esc, el } from '../util.js';
+
+export function renderSettings(root) {
+  const people = db.getPeople();
+  const cats = db.getCategories();
+  const merchants = db.getMerchants();
+
+  root.appendChild(el(`
+  <div class="settings-view">
+    <section class="card">
+      <h3>Osoby a pomer</h3>
+      <div class="settings-row">
+        <label>Osoba 1 <input id="name-s" value="${esc(people.S)}"></label>
+        <label>Osoba 2 <input id="name-m" value="${esc(people.M)}"></label>
+        <label>Predvolený pomer osoby 1
+          <span class="ratio-edit"><input id="def-ratio" type="number" min="0" max="100" step="5" value="${Math.round(db.getDefaultRatioS() * 100)}"> %</span>
+        </label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>Kategórie</h3>
+      <div id="cat-list">
+        ${cats.map(c => `
+          <div class="cat-row" data-id="${c.id}">
+            <input type="color" value="${c.color}" title="Farba">
+            <input class="cat-name" value="${esc(c.name)}">
+            ${c.id !== 'ostatne' ? '<button class="del" title="Zmazať (položky prejdú do Ostatné)">×</button>' : '<span class="muted">predvolená</span>'}
+          </div>`).join('')}
+      </div>
+      <form id="cat-add" class="add-row" autocomplete="off">
+        <input type="color" name="color" value="#20c997">
+        <input name="name" placeholder="Nová kategória" required>
+        <button class="primary">+</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h3>Obchody → kategórie <span class="muted">(auto-kategorizácia pri zadávaní)</span></h3>
+      <input id="m-search" type="search" placeholder="Hľadať obchod…">
+      <div id="merchant-list-box">
+        ${merchants.map(m => merchantRow(m, cats)).join('')}
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>Záloha dát</h3>
+      <div class="settings-row">
+        <button id="export" class="primary">Exportovať JSON</button>
+        <label class="file-btn">Importovať JSON<input id="import" type="file" accept=".json" hidden></label>
+        <button id="reset" class="danger">Obnoviť z pôvodného importu</button>
+      </div>
+      <p class="muted">Dáta sú zatiaľ uložené lokálne v prehliadači. Export si občas odlož.</p>
+    </section>
+  </div>`));
+
+  // osoby + pomer
+  root.querySelector('#name-s').addEventListener('change', e => db.setPersonName('S', e.target.value.trim() || 'Osoba 1'));
+  root.querySelector('#name-m').addEventListener('change', e => db.setPersonName('M', e.target.value.trim() || 'Osoba 2'));
+  root.querySelector('#def-ratio').addEventListener('change', e => {
+    const v = Math.min(100, Math.max(0, +e.target.value || 0));
+    db.setDefaultRatioS(v / 100);
+  });
+
+  // kategórie
+  root.querySelectorAll('.cat-row').forEach(row => {
+    const id = row.dataset.id;
+    row.querySelector('input[type=color]').addEventListener('change', e => db.updateCategory(id, { color: e.target.value }));
+    row.querySelector('.cat-name').addEventListener('change', e => db.updateCategory(id, { name: e.target.value.trim() || id }));
+    const del = row.querySelector('.del');
+    if (del) del.addEventListener('click', () => {
+      if (confirm('Zmazať kategóriu? Jej položky sa presunú do Ostatné.')) {
+        db.deleteCategory(id);
+        rerender(root);
+      }
+    });
+  });
+  root.querySelector('#cat-add').addEventListener('submit', e => {
+    e.preventDefault();
+    const f = e.target;
+    if (db.addCategory(f.name.value.trim(), f.color.value)) rerender(root);
+    else alert('Kategória s takým názvom už existuje.');
+  });
+
+  // obchody
+  const box = root.querySelector('#merchant-list-box');
+  box.addEventListener('change', e => {
+    const row = e.target.closest('.merchant-row');
+    if (row && e.target.tagName === 'SELECT') db.setMerchantCategory(row.dataset.name, e.target.value);
+  });
+  box.addEventListener('click', e => {
+    if (e.target.classList.contains('del')) {
+      db.deleteMerchant(e.target.closest('.merchant-row').dataset.name);
+      rerender(root);
+    }
+  });
+  root.querySelector('#m-search').addEventListener('input', e => {
+    const q = e.target.value.trim().toLowerCase();
+    box.querySelectorAll('.merchant-row').forEach(r =>
+      r.style.display = r.dataset.name.toLowerCase().includes(q) ? '' : 'none');
+  });
+
+  // záloha
+  root.querySelector('#export').addEventListener('click', () => {
+    const blob = new Blob([db.exportJson()], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `lovky-zaloha-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+  root.querySelector('#import').addEventListener('change', async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      db.importJson(await file.text());
+      alert('Import hotový.');
+      rerender(root);
+    } catch (err) {
+      alert('Import zlyhal: ' + err.message);
+    }
+  });
+  root.querySelector('#reset').addEventListener('click', async () => {
+    if (confirm('Naozaj zahodiť všetky zmeny a vrátiť sa k pôvodnému importu z xlsx?')) {
+      await db.resetToSeed();
+      rerender(root);
+    }
+  });
+}
+
+function merchantRow(m, cats) {
+  return `<div class="merchant-row" data-name="${esc(m.name)}">
+    <span>${esc(m.name)}</span>
+    <select>${cats.map(c => `<option value="${c.id}" ${m.category === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select>
+    <button class="del" title="Odstrániť mapovanie">×</button>
+  </div>`;
+}
+
+function rerender(root) {
+  root.innerHTML = '';
+  renderSettings(root);
+}

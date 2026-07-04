@@ -1,0 +1,7 @@
+# finančné dáta — nikdy nepushovať do verejného repa
+data/
+*.xlsx
+
+# lokálna konfigurácia
+.claude/
+node_modules/

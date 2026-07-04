@@ -36,16 +36,29 @@ export async function signIn(name, password) {
 export async function signOut() { await supabase.auth.signOut(); }
 export async function currentEmail() { return (await supabase.auth.getUser()).data.user?.email || ''; }
 
+// Supabase REST vracia max 1000 riadkov na dotaz — výdavky preto ťaháme po stránkach.
+async function fetchAll(table) {
+  const page = 1000;
+  let from = 0, all = [];
+  for (;;) {
+    const { data, error } = await supabase.from(table).select('*').range(from, from + page - 1);
+    if (error) throw error;
+    all = all.concat(data);
+    if (data.length < page) return all;
+    from += page;
+  }
+}
+
 // --- načítanie ---
 export async function init() {
   const [settings, categories, merchants, expenses, settlements] = await Promise.all([
     supabase.from('settings').select('*').maybeSingle(),
     supabase.from('categories').select('*').order('sort'),
     supabase.from('merchants').select('*').order('name'),
-    supabase.from('expenses').select('*'),
+    fetchAll('expenses'),
     supabase.from('settlements').select('*'),
   ]);
-  const err = settings.error || categories.error || merchants.error || expenses.error || settlements.error;
+  const err = settings.error || categories.error || merchants.error || settlements.error;
   if (err) throw err;
 
   const s = settings.data || { people: { S: 'Samuel', M: 'Marcelka' }, default_ratio_s: 0.65 };
@@ -54,7 +67,7 @@ export async function init() {
     defaultRatioS: Number(s.default_ratio_s),
     categories: (categories.data || []).map(c => ({ id: c.id, name: c.name, color: c.color })),
     merchants: (merchants.data || []).map(m => ({ name: m.name, category: m.category })),
-    expenses: (expenses.data || []).map(e => ({
+    expenses: expenses.map(e => ({
       id: e.id, month: e.month, person: e.person, merchant: e.merchant,
       amount: Number(e.amount), category: e.category, ...(e.note ? { note: e.note } : {}),
     })),

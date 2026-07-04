@@ -100,10 +100,11 @@ main { max-width: 1100px; margin: 0 auto; padding: 20px; }
 }
 .month-carousel {
   display: flex;
-  gap: 6px;
-  max-width: 100%;
+  gap: 8px;
+  width: 100%;
   overflow-x: auto;
   padding: 4px;
+  justify-content: safe center;
   scrollbar-width: thin;
 }
 .mon-chip {
@@ -111,10 +112,10 @@ main { max-width: 1100px; margin: 0 auto; padding: 20px; }
   background: var(--surface2);
   border: 1px solid var(--border);
   color: var(--muted);
-  padding: 6px 12px;
-  border-radius: 20px;
+  padding: 10px 18px;
+  border-radius: 22px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 15px;
   white-space: nowrap;
 }
 .mon-chip:hover { color: var(--text); border-color: var(--accent); }
@@ -123,6 +124,11 @@ main { max-width: 1100px; margin: 0 auto; padding: 20px; }
   color: #0b1520;
   border-color: var(--accent);
   font-weight: 600;
+}
+/* na mobile len vybraný mesiac + 1 dozadu/dopredu (4.–6. z 9 chipov) */
+@media (max-width: 620px) {
+  .month-carousel .mon-chip:nth-child(-n+3),
+  .month-carousel .mon-chip:nth-child(n+7) { display: none; }
 }
 
 .columns {

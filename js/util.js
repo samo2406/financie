@@ -7,7 +7,7 @@ export function monthLabel(month) {
 
 export function monthShort(month) {
   const [y, m] = month.split('-');
-  return `${MONTH_NAMES[+m - 1]} '${y.slice(2)}`;
+  return `${MONTH_NAMES[+m - 1]} ${y.slice(2)}`;
 }
 
 export function currentMonth() {

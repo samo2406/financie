@@ -1,5 +1,5 @@
 import * as db from '../db.js';
-import { monthLabel, monthShort, currentMonth, shiftMonth, eur, fmtDate, todayIso, esc, el, parseAmount } from '../util.js';
+import { monthShort, currentMonth, shiftMonth, eur, fmtDate, todayIso, esc, el, parseAmount } from '../util.js';
 
 let month = currentMonth();
 
@@ -27,7 +27,6 @@ export function renderMonth(root) {
   root.appendChild(el(`
   <div class="month-view">
     <div class="month-nav">
-      <h2>${monthLabel(month)}</h2>
       <div class="month-carousel">
         ${Array.from({ length: 9 }, (_, i) => {
           const m = shiftMonth(month, i - 4);

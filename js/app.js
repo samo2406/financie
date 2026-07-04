@@ -3,6 +3,7 @@ import { renderMonth } from './views/month.js';
 import { renderHistory } from './views/history.js';
 import { renderCharts } from './views/charts.js';
 import { renderSettings } from './views/settings.js';
+import { el, esc } from './util.js';
 
 const VIEWS = { month: renderMonth, history: renderHistory, charts: renderCharts, settings: renderSettings };
 let current = 'month';
@@ -20,6 +21,64 @@ document.getElementById('tabs').addEventListener('click', e => {
   if (btn) show(btn.dataset.view);
 });
 
-db.init().then(() => show(current)).catch(err => {
-  document.getElementById('view').innerHTML = `<p class="error">Nepodarilo sa načítať dáta: ${err.message}</p>`;
-});
+function showLogin(message) {
+  document.body.classList.remove('authed');
+  const root = document.getElementById('view');
+  root.innerHTML = '';
+  const form = el(`
+    <form class="login card">
+      <h2>💶 Lovky</h2>
+      <p class="muted">Prihlás sa pre prístup k výdavkom.</p>
+      <input name="email" type="email" placeholder="E-mail" autocomplete="username" required>
+      <input name="password" type="password" placeholder="Heslo" autocomplete="current-password" required>
+      <button class="primary" type="submit">Prihlásiť sa</button>
+      <p class="login-error">${message ? esc(message) : ''}</p>
+    </form>`);
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = form.querySelector('button');
+    btn.disabled = true;
+    form.querySelector('.login-error').textContent = '';
+    try {
+      await db.signIn(form.email.value.trim(), form.password.value);
+      await boot();
+    } catch (err) {
+      form.querySelector('.login-error').textContent = 'Prihlásenie zlyhalo: ' + err.message;
+      btn.disabled = false;
+    }
+  });
+  root.appendChild(form);
+}
+
+async function renderAuthBar() {
+  const bar = document.getElementById('auth-bar');
+  const email = await db.currentEmail();
+  bar.innerHTML = `<span class="who">${esc(email)}</span>
+    <button id="refresh" title="Načítať najnovšie dáta">🔄</button>
+    <button id="logout">Odhlásiť</button>`;
+  bar.querySelector('#logout').addEventListener('click', async () => { await db.signOut(); });
+  bar.querySelector('#refresh').addEventListener('click', async () => {
+    const btn = bar.querySelector('#refresh');
+    btn.classList.add('spin');
+    try { await db.init(); show(current); } finally { btn.classList.remove('spin'); }
+  });
+}
+
+async function boot() {
+  const session = await db.getSession();
+  if (!session) { showLogin(); return; }
+  try {
+    await db.init();
+  } catch (err) {
+    showLogin('Nepodarilo sa načítať dáta: ' + err.message);
+    return;
+  }
+  document.body.classList.add('authed');
+  await renderAuthBar();
+  show(current);
+}
+
+// odhlásenie v inej karte / vypršanie session
+db.onAuth(session => { if (!session) showLogin(); });
+
+boot();

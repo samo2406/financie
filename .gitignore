@@ -1,6 +1,7 @@
 # finančné dáta — nikdy nepushovať do verejného repa
 data/
 *.xlsx
+supabase/seed-data.sql
 
 # lokálna konfigurácia
 .claude/

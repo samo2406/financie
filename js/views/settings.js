@@ -49,9 +49,8 @@ export function renderSettings(root) {
       <div class="settings-row">
         <button id="export" class="primary">Exportovať JSON</button>
         <label class="file-btn">Importovať JSON<input id="import" type="file" accept=".json" hidden></label>
-        <button id="reset" class="danger">Obnoviť z pôvodného importu</button>
       </div>
-      <p class="muted">Dáta sú zatiaľ uložené lokálne v prehliadači. Export si občas odlož.</p>
+      <p class="muted">Dáta sú v cloude (Supabase). Export slúži ako offline záloha.</p>
     </section>
   </div>`));
 
@@ -114,17 +113,11 @@ export function renderSettings(root) {
     const file = e.target.files[0];
     if (!file) return;
     try {
-      db.importJson(await file.text());
+      await db.importJson(await file.text());
       alert('Import hotový.');
       rerender(root);
     } catch (err) {
       alert('Import zlyhal: ' + err.message);
-    }
-  });
-  root.querySelector('#reset').addEventListener('click', async () => {
-    if (confirm('Naozaj zahodiť všetky zmeny a vrátiť sa k pôvodnému importu z xlsx?')) {
-      await db.resetToSeed();
-      rerender(root);
     }
   });
 }

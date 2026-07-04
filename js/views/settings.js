@@ -13,10 +13,11 @@ export function renderSettings(root) {
       <div class="settings-row">
         <label>Osoba 1 <input id="name-s" value="${esc(people.S)}"></label>
         <label>Osoba 2 <input id="name-m" value="${esc(people.M)}"></label>
-        <label>Predvolený pomer osoby 1
-          <span class="ratio-edit"><input id="def-ratio" type="number" min="0" max="100" step="5" value="${Math.round(db.getDefaultRatioS() * 100)}"> %</span>
+        <label>Pomer osoby 1 (%)
+          <span class="ratio-box"><input id="def-ratio" type="number" min="0" max="100" step="5" value="${Math.round(db.getDefaultRatioS() * 100)}"> %</span>
         </label>
       </div>
+      <p class="muted">Používa sa pre otvorené mesiace. Pri označení mesiaca ako vyplateného sa pomer preň uzamkne — neskoršia zmena už staré mesiace neprepočíta.</p>
     </section>
 
     <section class="card">

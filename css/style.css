@@ -214,20 +214,58 @@ button.danger:hover { background: var(--danger); color: #fff; }
 .link-btn:hover { color: var(--danger); }
 
 /* --- vyúčtovanie --- */
-.settle-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
-  margin-bottom: 16px;
-}
-.stat {
+.settle-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 12px 14px;
   background: var(--surface2);
   border-radius: 8px;
-  padding: 10px 12px;
+  margin-bottom: 14px;
 }
-.stat span { display: block; color: var(--muted); font-size: 12px; margin-bottom: 4px; }
-.stat strong { font-size: 17px; font-variant-numeric: tabular-nums; }
-.ratio-edit input { width: 58px; padding: 4px 6px; text-align: right; }
+.settle-total span { color: var(--muted); }
+.settle-total strong { font-size: 22px; font-variant-numeric: tabular-nums; }
+
+.settle-people {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+@media (max-width: 520px) { .settle-people { grid-template-columns: 1fr; } }
+
+.settle-person {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.settle-person.owes { border-color: color-mix(in srgb, var(--danger) 55%, transparent); }
+.sp-name { font-weight: 600; margin-bottom: 8px; }
+.sp-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 3px 0;
+  font-size: 14px;
+}
+.sp-line span { color: var(--muted); }
+.sp-line b { font-variant-numeric: tabular-nums; font-weight: 600; }
+.sp-line.owe-line {
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.sp-line.owe-line span { color: var(--text); }
+.sp-line.owe-line b { color: var(--danger); }
+
+.settle-ratio {
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+.settle-ratio b { color: var(--text); }
 
 .settle-result { text-align: center; }
 .settle-result p { margin: 8px 0; font-size: 17px; }
@@ -274,6 +312,7 @@ table.full td, table.full th { padding: 8px 12px; }
   align-items: end;
 }
 .settings-row label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); }
+.ratio-box input { width: 70px; text-align: right; }
 
 .cat-row, .merchant-row {
   display: flex;

@@ -7,8 +7,10 @@ export function renderMonth(root) {
   const people = db.getPeople();
   const cats = db.getCategories();
   const expenses = db.expensesForMonth(month);
+  // uzavretý mesiac drží pomer odfotený pri vyúčtovaní; otvorený berie živý pomer z nastavení
   const settlement = db.getSettlement(month);
-  const ratioS = settlement ? settlement.ratioS : db.getDefaultRatioS();
+  const locked = !!(settlement && settlement.settledAt);
+  const ratioS = locked ? settlement.ratioS : db.getDefaultRatioS();
 
   const sumS = round2(expenses.filter(e => e.person === 'S').reduce((a, e) => a + e.amount, 0));
   const sumM = round2(expenses.filter(e => e.person === 'M').reduce((a, e) => a + e.amount, 0));
@@ -17,6 +19,7 @@ export function renderMonth(root) {
   const shareM = total * (1 - ratioS);
   const paysS = Math.max(shareS - sumS, 0);
   const paysM = Math.max(shareM - sumM, 0);
+  const pctS = Math.round(ratioS * 100);
 
   const catOptions = cats.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
   const merchantList = db.getMerchants().map(m => `<option value="${esc(m.name)}">`).join('');
@@ -37,26 +40,31 @@ export function renderMonth(root) {
 
     <section class="settlement card">
       <h3>Vyúčtovanie</h3>
-      <div class="settle-grid">
-        <div class="stat"><span>Spolu</span><strong>${eur(total)}</strong></div>
-        <div class="stat"><span>${esc(people.S)} zaplatil</span><strong>${eur(sumS)}</strong></div>
-        <div class="stat"><span>${esc(people.M)} zaplatila</span><strong>${eur(sumM)}</strong></div>
-        <div class="stat"><span>Pomer</span>
-          <strong class="ratio-edit">
-            <input type="number" id="ratio-s" min="0" max="100" step="5" value="${Math.round(ratioS * 100)}"> /
-            <span id="ratio-m">${Math.round((1 - ratioS) * 100)}</span> %
-          </strong>
-        </div>
-        <div class="stat"><span>Podiel ${esc(people.S)}</span><strong>${eur(shareS)}</strong></div>
-        <div class="stat"><span>Podiel ${esc(people.M)}</span><strong>${eur(shareM)}</strong></div>
+
+      <div class="settle-total">
+        <span>Celkové výdavky spolu</span>
+        <strong>${eur(total)}</strong>
       </div>
+
+      <div class="settle-people">
+        ${settlePerson(people.S, sumS, shareS, paysS, pctS)}
+        ${settlePerson(people.M, sumM, shareM, paysM, 100 - pctS)}
+      </div>
+
+      <div class="settle-ratio">
+        Delené pomerom <b>${pctS} / ${100 - pctS} %</b>
+        · ${locked
+          ? `uzamknuté pri vyúčtovaní${settlement.settledAt === 'unknown' ? '' : ' ' + fmtDate(settlement.settledAt)}`
+          : 'podľa nastavení'}
+      </div>
+
       <div class="settle-result">
         ${total === 0 ? '<p class="muted">Zatiaľ žiadne výdavky.</p>'
-          : paysS > 0.005 ? `<p><strong>${esc(people.S)}</strong> doplatí <strong class="owe">${eur(paysS)}</strong></p>`
-          : paysM > 0.005 ? `<p><strong>${esc(people.M)}</strong> doplatí <strong class="owe">${eur(paysM)}</strong></p>`
+          : paysS > 0.005 ? `<p><strong>${esc(people.S)}</strong> doplatí <strong class="owe">${eur(paysS)}</strong> pre ${esc(people.M)}</p>`
+          : paysM > 0.005 ? `<p><strong>${esc(people.M)}</strong> doplatí <strong class="owe">${eur(paysM)}</strong> pre ${esc(people.S)}</p>`
           : '<p>Vyrovnané, nikto nič nedopláca. 🎉</p>'}
-        ${settlement && settlement.settledAt
-          ? `<p class="settled">✅ Vyplatené ${settlement.settledAt === 'unknown' ? '' : fmtDate(settlement.settledAt)}
+        ${locked
+          ? `<p class="settled">✅ Vyplatené${settlement.settledAt === 'unknown' ? '' : ' ' + fmtDate(settlement.settledAt)}
              <button id="unsettle" class="link-btn">zrušiť</button></p>`
           : total > 0 ? `<button id="settle" class="primary">Označiť ako vyplatené</button>` : ''}
       </div>
@@ -184,18 +192,10 @@ export function renderMonth(root) {
     sel.addEventListener('blur', () => { if (!done) rerender(root); }, { once: true });
   }));
 
-  // --- pomer ---
-  const ratioInput = root.querySelector('#ratio-s');
-  ratioInput.addEventListener('change', () => {
-    const v = Math.min(100, Math.max(0, +ratioInput.value || 0));
-    db.upsertSettlement(month, { ratioS: v / 100 });
-    rerender(root);
-  });
-
-  // --- vyplatené ---
+  // --- vyplatené: odfotí aktuálny pomer z nastavení a uzamkne ho pre tento mesiac ---
   const settleBtn = root.querySelector('#settle');
   if (settleBtn) settleBtn.addEventListener('click', () => {
-    db.upsertSettlement(month, { ratioS, settledAt: todayIso() });
+    db.upsertSettlement(month, { ratioS: db.getDefaultRatioS(), settledAt: todayIso() });
     rerender(root);
   });
   const unsettleBtn = root.querySelector('#unsettle');
@@ -209,6 +209,17 @@ function rerender(root, after) {
   root.innerHTML = '';
   renderMonth(root);
   if (after) after();
+}
+
+function settlePerson(name, paid, share, pays, pct) {
+  const owes = pays > 0.005;
+  return `
+  <div class="settle-person${owes ? ' owes' : ''}">
+    <div class="sp-name">${esc(name)}</div>
+    <div class="sp-line"><span>Zaplatené</span><b>${eur(paid)}</b></div>
+    <div class="sp-line"><span>Podiel (${pct} %)</span><b>${eur(share)}</b></div>
+    ${owes ? `<div class="sp-line owe-line"><span>Dopláca</span><b>${eur(pays)}</b></div>` : ''}
+  </div>`;
 }
 
 const round2 = v => Math.round(v * 100) / 100;

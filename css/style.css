@@ -150,6 +150,16 @@ button.del {
 }
 button.del:hover { color: var(--danger); background: var(--surface2); }
 
+td.cell-cat { cursor: pointer; }
+td.cell-merchant:hover, td.cell-amount:hover, td.cell-cat:hover { background: var(--surface2); }
+.inline-edit {
+  width: 100%;
+  padding: 4px 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+input.inline-edit.num { text-align: right; }
+
 .add-row {
   display: flex;
   gap: 8px;

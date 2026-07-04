@@ -68,9 +68,9 @@ export function renderMonth(root) {
     const rows = list.map(e => {
       const c = db.getCategory(e.category);
       return `<tr data-id="${e.id}">
-        <td>${esc(e.merchant) || '<span class="muted">—</span>'}</td>
-        <td><span class="chip" style="--c:${c ? c.color : '#888'}">${c ? esc(c.name) : '?'}</span></td>
-        <td class="num">${eur(e.amount)}</td>
+        <td class="cell-merchant" title="Dvojklik pre úpravu">${esc(e.merchant) || '<span class="muted">—</span>'}</td>
+        <td class="cell-cat" title="Klik pre zmenu kategórie"><span class="chip" style="--c:${c ? c.color : '#888'}">${c ? esc(c.name) : '?'}</span></td>
+        <td class="num cell-amount" title="Dvojklik pre úpravu">${eur(e.amount)}</td>
         <td><button class="del" title="Zmazať">×</button></td>
       </tr>`;
     }).join('');
@@ -121,8 +121,67 @@ export function renderMonth(root) {
 
   // --- mazanie ---
   root.querySelectorAll('.expenses .del').forEach(btn => btn.addEventListener('click', () => {
-    db.deleteExpense(+btn.closest('tr').dataset.id);
+    db.deleteExpense(btn.closest('tr').dataset.id);
     rerender(root);
+  }));
+
+  // --- inline úprava zapísaných výdavkov ---
+  const findExpense = id => db.getExpenses().find(e => e.id === id);
+
+  // dvojklik na text/sumu → políčko; Enter alebo klik mimo uloží, Esc zruší
+  function editCell(td, buildInput, commit) {
+    const id = td.closest('tr').dataset.id;
+    const e = findExpense(id);
+    if (!e) return;
+    td.innerHTML = buildInput(e);
+    const inp = td.querySelector('input');
+    inp.focus();
+    inp.select();
+    let cancel = false;
+    inp.addEventListener('keydown', ev => {
+      if (ev.key === 'Enter') inp.blur();
+      else if (ev.key === 'Escape') { cancel = true; inp.blur(); }
+    });
+    inp.addEventListener('blur', () => {
+      if (!cancel) commit(id, e, inp.value);
+      rerender(root);
+    }, { once: true });
+  }
+
+  root.querySelectorAll('td.cell-merchant').forEach(td => td.addEventListener('dblclick', () => {
+    editCell(td,
+      e => `<input class="inline-edit" list="merchant-list" value="${esc(e.merchant)}">`,
+      (id, e, value) => {
+        const val = value.trim();
+        if (!val || val === e.merchant) return;
+        const merchant = db.merchantCanonical(val);
+        const patch = { merchant };
+        const cat = db.merchantCategory(merchant);
+        if (cat) patch.category = cat;
+        db.updateExpense(id, patch);
+      });
+  }));
+
+  root.querySelectorAll('td.cell-amount').forEach(td => td.addEventListener('dblclick', () => {
+    editCell(td,
+      e => `<input class="inline-edit num" inputmode="decimal" value="${String(e.amount).replace('.', ',')}">`,
+      (id, e, value) => {
+        const val = parseAmount(value);
+        if (val !== null && val !== e.amount) db.updateExpense(id, { amount: val });
+      });
+  }));
+
+  root.querySelectorAll('td.cell-cat').forEach(td => td.addEventListener('click', () => {
+    const id = td.closest('tr').dataset.id;
+    const e = findExpense(id);
+    if (!e) return;
+    td.innerHTML = `<select class="inline-edit">${cats.map(c =>
+      `<option value="${c.id}" ${c.id === e.category ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select>`;
+    const sel = td.querySelector('select');
+    sel.focus();
+    let done = false;
+    sel.addEventListener('change', () => { done = true; db.updateExpense(id, { category: sel.value }); rerender(root); });
+    sel.addEventListener('blur', () => { if (!done) rerender(root); }, { once: true });
   }));
 
   // --- pomer ---

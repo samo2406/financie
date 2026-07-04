@@ -1,5 +1,5 @@
 import * as db from '../db.js';
-import { monthShort, currentMonth, shiftMonth, eur, fmtDate, todayIso, esc, el, parseAmount } from '../util.js';
+import { monthShort, currentMonth, shiftMonth, eur, fmtDate, todayIso, esc, el, parseAmount, catIcon, initial } from '../util.js';
 
 let month = currentMonth();
 
@@ -37,29 +37,20 @@ export function renderMonth(root) {
     </div>
 
     <div class="columns">
-      ${personColumn('S', people.S, expenses, cats)}
-      ${personColumn('M', people.M, expenses, cats)}
+      ${personColumn('S', people.S, sumS, expenses, cats)}
+      ${personColumn('M', people.M, sumM, expenses, cats)}
     </div>
     <datalist id="merchant-list">${merchantList}</datalist>
 
     <section class="settlement card">
-      <h3>Vyúčtovanie</h3>
-
       <div class="settle-total">
         <span>Celkové výdavky spolu</span>
         <strong>${eur(total)}</strong>
       </div>
 
-      <div class="settle-people">
-        ${settlePerson(people.S, sumS, shareS, paysS, pctS)}
-        ${settlePerson(people.M, sumM, shareM, paysM, 100 - pctS)}
-      </div>
-
-      <div class="settle-ratio">
-        Delené pomerom <b>${pctS} / ${100 - pctS} %</b>
-        · ${locked
-          ? `uzamknuté pri vyúčtovaní${settlement.settledAt === 'unknown' ? '' : ' ' + fmtDate(settlement.settledAt)}`
-          : 'podľa nastavení'}
+      <div class="settle-hero">
+        ${settleBar('S', people.S, sumS, shareS)}
+        ${settleBar('M', people.M, sumM, shareM)}
       </div>
 
       <div class="settle-result">
@@ -67,6 +58,12 @@ export function renderMonth(root) {
           : paysS > 0.005 ? `<p><strong>${esc(people.S)}</strong> doplatí <strong class="owe">${eur(paysS)}</strong></p>`
           : paysM > 0.005 ? `<p><strong>${esc(people.M)}</strong> doplatí <strong class="owe">${eur(paysM)}</strong></p>`
           : '<p>Vyrovnané, nikto nič nedopláca. 🎉</p>'}
+        <div class="settle-meta">
+          Pomer <b>${pctS} / ${100 - pctS} %</b>
+          · ${locked
+            ? `uzamknuté${settlement.settledAt === 'unknown' ? '' : ' ' + fmtDate(settlement.settledAt)}`
+            : 'podľa nastavení'}
+        </div>
         ${locked
           ? `<p class="settled">✅ Vyplatené${settlement.settledAt === 'unknown' ? '' : ' ' + fmtDate(settlement.settledAt)}
              <button id="unsettle" class="link-btn">zrušiť</button></p>`
@@ -75,22 +72,28 @@ export function renderMonth(root) {
     </section>
   </div>`));
 
-  function personColumn(personKey, name, all, cats) {
+  function personColumn(personKey, name, sum, all, cats) {
     const list = all.filter(e => e.person === personKey);
     const rows = list.map(e => {
       const c = db.getCategory(e.category);
+      const color = c ? c.color : '#868e96';
       return `<tr data-id="${e.id}">
+        <td class="cell-icon"><span class="cat-ic" style="--c:${color}">${catIcon(e.category)}</span></td>
         <td class="cell-merchant" title="Dvojklik pre úpravu">${esc(e.merchant) || '<span class="muted">—</span>'}</td>
-        <td class="cell-cat" title="Klik pre zmenu kategórie"><span class="chip" style="--c:${c ? c.color : '#888'}">${c ? esc(c.name) : '?'}</span></td>
+        <td class="cell-cat" title="Klik pre zmenu kategórie"><span class="chip" style="--c:${color}">${c ? esc(c.name) : '?'}</span></td>
         <td class="num cell-amount" title="Dvojklik pre úpravu">${eur(e.amount)}</td>
         <td><button class="del" title="Zmazať">×</button></td>
       </tr>`;
     }).join('');
     return `
     <section class="card person-col" data-person="${personKey}">
-      <h3>${esc(name)}</h3>
+      <div class="pcol-head">
+        <span class="av av-${personKey}">${initial(name)}</span>
+        <span class="pcol-name">${esc(name)}</span>
+        <span class="pcol-sub">${eur(sum)}</span>
+      </div>
       <table class="expenses">
-        <tbody>${rows || '<tr><td colspan="4" class="muted empty">Žiadne výdavky</td></tr>'}</tbody>
+        <tbody>${rows || '<tr><td colspan="5" class="muted empty">Žiadne výdavky</td></tr>'}</tbody>
       </table>
       <form class="add-row" autocomplete="off">
         <input name="merchant" list="merchant-list" placeholder="Obchod" required>
@@ -215,14 +218,19 @@ function rerender(root, after) {
   if (after) after();
 }
 
-function settlePerson(name, paid, share, pays, pct) {
-  const owes = pays > 0.005;
+function settleBar(key, name, paid, share) {
+  const net = round2(paid - share);
+  const fill = share > 0.005 ? Math.min(100, Math.max(0, Math.round((paid / share) * 100))) : (paid > 0 ? 100 : 0);
+  const neg = net < -0.005;
   return `
-  <div class="settle-person${owes ? ' owes' : ''}">
-    <div class="sp-name">${esc(name)}</div>
-    <div class="sp-line"><span>Zaplatené</span><b>${eur(paid)}</b></div>
-    <div class="sp-line"><span>Podiel (${pct} %)</span><b>${eur(share)}</b></div>
-    ${owes ? `<div class="sp-line owe-line"><span>Dopláca</span><b>${eur(pays)}</b></div>` : ''}
+  <div class="sbar-row">
+    <span class="av av-${key}">${initial(name)}</span>
+    <div class="sbar-mid">
+      <div class="sbar-top"><span class="sbar-name">${esc(name)}</span>
+        <small>zaplatené ${eur(paid)} · podiel ${eur(share)}</small></div>
+      <div class="bar"><i class="fill-${key}" style="width:${fill}%"></i></div>
+    </div>
+    <span class="sbar-net ${neg ? 'neg' : 'pos'}">${neg ? '−' : '+'}${eur(Math.abs(net))}</span>
   </div>`;
 }
 

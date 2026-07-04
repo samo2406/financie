@@ -10,6 +10,14 @@ export function monthShort(month) {
   return `${MONTH_NAMES[+m - 1]} ${y.slice(2)}`;
 }
 
+const CATEGORY_ICONS = {
+  jedlo: '🍔', byt: '🏠', potraviny: '🛒', eshop: '📦',
+  domacnost: '🧴', cestovanie: '✈️', ostatne: '🧾',
+};
+export const catIcon = id => CATEGORY_ICONS[id] || '🏷️';
+
+export const initial = name => (name || '?').trim().charAt(0).toUpperCase();
+
 export function currentMonth() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;

@@ -1,14 +1,25 @@
 :root {
-  --bg: #12151c;
-  --surface: #1a1f2a;
-  --surface2: #222836;
-  --border: #2c3444;
-  --text: #e6e9f0;
-  --muted: #8b93a7;
-  --accent: #4dabf7;
-  --danger: #ff6b6b;
-  --ok: #51cf66;
-  --radius: 10px;
+  --bg: #0d1017;
+  --surface: #141a24;
+  --surface2: #1b2431;
+  --border: #232e3d;
+  --text: #e7ecf3;
+  --muted: #8792a6;
+  --accent: #37d9b3;
+  --accent-ink: #04231c;
+  --danger: #ff8a6b;
+  --ok: #49cf7c;
+  --sam: #4dabf7;
+  --mar: #f783ac;
+  --radius: 14px;
+  --num-font: ui-monospace, "SF Mono", "Cascadia Mono", "Segoe UI Mono", Menlo, monospace;
+}
+
+/* peňažné čísla monospace + zarovnané */
+td.num, .cell-amount, .settle-total strong, .pcol-sub, .sbar-net,
+.summary-bar strong, .kpi b, .inline-edit.num {
+  font-family: var(--num-font);
+  font-variant-numeric: tabular-nums;
 }
 
 * { box-sizing: border-box; }
@@ -234,62 +245,64 @@ button.danger:hover { background: var(--danger); color: #fff; }
 }
 .link-btn:hover { color: var(--danger); }
 
+/* --- avatary --- */
+.av {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: grid; place-items: center;
+  color: #04121f; font-weight: 700; font-size: 13px; flex: none;
+}
+.av-S { background: var(--sam); }
+.av-M { background: var(--mar); }
+
+/* --- hlavička stĺpca osoby --- */
+.pcol-head {
+  display: flex; align-items: center; gap: 10px;
+  padding-bottom: 12px; margin-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.pcol-name { font-weight: 600; flex: 1; }
+.pcol-sub { color: var(--muted); font-size: 14px; }
+
+/* --- ikonka kategórie v riadku --- */
+.cat-ic {
+  display: grid; place-items: center;
+  width: 30px; height: 30px; border-radius: 9px;
+  font-size: 15px;
+  background: color-mix(in srgb, var(--c) 20%, transparent);
+}
+td.cell-icon { width: 30px; padding-right: 4px; }
+
 /* --- vyúčtovanie --- */
 .settle-total {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  padding: 12px 14px;
+  padding: 14px 16px;
   background: var(--surface2);
-  border-radius: 8px;
-  margin-bottom: 14px;
+  border-radius: 10px;
+  margin-bottom: 16px;
 }
 .settle-total span { color: var(--muted); }
-.settle-total strong { font-size: 22px; font-variant-numeric: tabular-nums; }
+.settle-total strong { font-size: 24px; letter-spacing: -.01em; }
 
-.settle-people {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-@media (max-width: 520px) { .settle-people { grid-template-columns: 1fr; } }
-
-.settle-person {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px 14px;
-}
-.settle-person.owes { border-color: color-mix(in srgb, var(--danger) 55%, transparent); }
-.sp-name { font-weight: 600; margin-bottom: 8px; }
-.sp-line {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding: 3px 0;
-  font-size: 14px;
-}
-.sp-line span { color: var(--muted); }
-.sp-line b { font-variant-numeric: tabular-nums; font-weight: 600; }
-.sp-line.owe-line {
-  margin-top: 6px;
-  padding-top: 8px;
-  border-top: 1px solid var(--border);
-}
-.sp-line.owe-line span { color: var(--text); }
-.sp-line.owe-line b { color: var(--danger); }
-
-.settle-ratio {
-  text-align: center;
-  color: var(--muted);
-  font-size: 13px;
-  margin-bottom: 12px;
-}
-.settle-ratio b { color: var(--text); }
+.settle-hero { display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px; }
+.sbar-row { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; }
+.sbar-mid { min-width: 0; }
+.sbar-top { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+.sbar-name { font-weight: 600; }
+.sbar-top small { color: var(--muted); font-size: 12px; }
+.bar { height: 8px; border-radius: 6px; background: var(--surface2); overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 6px; transition: width .35s ease; }
+.fill-S { background: var(--sam); }
+.fill-M { background: var(--mar); }
+.sbar-net { font-weight: 700; font-size: 14px; white-space: nowrap; }
+.sbar-net.neg { color: var(--danger); }
+.sbar-net.pos { color: var(--ok); }
 
 .settle-result { text-align: center; }
 .settle-result p { margin: 8px 0; font-size: 17px; }
+.settle-meta { color: var(--muted); font-size: 13px; margin-bottom: 10px; }
+.settle-meta b { color: var(--text); }
 .owe { color: var(--danger); font-size: 20px; }
 .settled { color: var(--ok); }
 

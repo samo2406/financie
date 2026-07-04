@@ -53,7 +53,7 @@ function showLogin(message) {
 async function renderAuthBar() {
   const bar = document.getElementById('auth-bar');
   const email = await db.currentEmail();
-  const who = email.replace(/@lovky\.local$/, '');
+  const who = email.replace(/@financie\.local$/, '');
   bar.innerHTML = `<span class="who">${esc(who)}</span>
     <button id="refresh" title="Načítať najnovšie dáta">🔄</button>
     <button id="logout">Odhlásiť</button>`;

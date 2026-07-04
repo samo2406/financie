@@ -24,7 +24,7 @@ export async function getSession() {
 }
 export function onAuth(cb) { supabase.auth.onAuthStateChange((_e, s) => cb(s)); }
 // prihlásenie menom aj e-mailom: k holému menu (bez @) sa doplní fixná doména
-const LOGIN_DOMAIN = '@lovky.local';
+const LOGIN_DOMAIN = '@financie.local';
 export function toEmail(name) {
   name = name.trim();
   return name.includes('@') ? name : name.toLowerCase() + LOGIN_DOMAIN;

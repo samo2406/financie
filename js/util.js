@@ -5,6 +5,11 @@ export function monthLabel(month) {
   return `${MONTH_NAMES[+m - 1]} ${y}`;
 }
 
+export function monthShort(month) {
+  const [y, m] = month.split('-');
+  return `${MONTH_NAMES[+m - 1]} '${y.slice(2)}`;
+}
+
 export function currentMonth() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;

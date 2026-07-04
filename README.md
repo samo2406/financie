@@ -1,4 +1,4 @@
-# Lovky 💶
+# Financie 💶
 
 Appka na spoločné mesačné výdavky pre dvoch — zadávanie, automatická kategorizácia podľa obchodu, mesačné vyúčtovanie (kto komu koľko doplatí) a grafy.
 

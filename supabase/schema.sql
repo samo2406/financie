@@ -1,4 +1,4 @@
--- Schéma pre appku Lovky. Spusti raz v Supabase SQL editore.
+-- Schéma pre appku Financie. Spusti raz v Supabase SQL editore.
 -- Bezpečnosť: RLS zapnuté na všetkých tabuľkách, prístup má len prihlásený
 -- používateľ (registrácia je vypnutá => existujú len 2 povolené účty).
 

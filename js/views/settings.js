@@ -9,13 +9,13 @@ export function renderSettings(root) {
   root.appendChild(el(`
   <div class="settings-view">
     <section class="card">
-      <h3>Osoby a pomer</h3>
-      <div class="settings-row">
-        <label>Osoba 1 <input id="name-s" value="${esc(people.S)}"></label>
-        <label>Osoba 2 <input id="name-m" value="${esc(people.M)}"></label>
-        <label>Pomer osoby 1 (%)
-          <span class="ratio-box"><input id="def-ratio" type="number" min="0" max="100" step="5" value="${Math.round(db.getDefaultRatioS() * 100)}"> %</span>
-        </label>
+      <h3>Predvolený pomer</h3>
+      <div class="ratio-slider">
+        <div class="ratio-ends">
+          <span>${esc(people.S)} <b id="pct-s">${Math.round(db.getDefaultRatioS() * 100)} %</b></span>
+          <span><b id="pct-m">${100 - Math.round(db.getDefaultRatioS() * 100)} %</b> ${esc(people.M)}</span>
+        </div>
+        <input id="def-ratio" type="range" min="0" max="100" step="5" value="${Math.round(db.getDefaultRatioS() * 100)}">
       </div>
       <p class="muted">Používa sa pre otvorené mesiace. Pri označení mesiaca ako vyplateného sa pomer preň uzamkne — neskoršia zmena už staré mesiace neprepočíta.</p>
     </section>
@@ -55,13 +55,14 @@ export function renderSettings(root) {
     </section>
   </div>`));
 
-  // osoby + pomer
-  root.querySelector('#name-s').addEventListener('change', e => db.setPersonName('S', e.target.value.trim() || 'Osoba 1'));
-  root.querySelector('#name-m').addEventListener('change', e => db.setPersonName('M', e.target.value.trim() || 'Osoba 2'));
-  root.querySelector('#def-ratio').addEventListener('change', e => {
-    const v = Math.min(100, Math.max(0, +e.target.value || 0));
-    db.setDefaultRatioS(v / 100);
+  // predvolený pomer (posuvník so živým zobrazením percent)
+  const ratio = root.querySelector('#def-ratio');
+  ratio.addEventListener('input', () => {
+    const v = +ratio.value;
+    root.querySelector('#pct-s').textContent = `${v} %`;
+    root.querySelector('#pct-m').textContent = `${100 - v} %`;
   });
+  ratio.addEventListener('change', () => db.setDefaultRatioS(+ratio.value / 100));
 
   // kategórie
   root.querySelectorAll('.cat-row').forEach(row => {
@@ -106,7 +107,7 @@ export function renderSettings(root) {
     const blob = new Blob([db.exportJson()], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `lovky-zaloha-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `financie-zaloha-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(a.href);
   });

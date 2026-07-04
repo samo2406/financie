@@ -1,5 +1,5 @@
 import * as db from '../db.js';
-import { monthLabel, currentMonth, shiftMonth, eur, fmtDate, todayIso, esc, el, parseAmount } from '../util.js';
+import { monthLabel, monthShort, currentMonth, shiftMonth, eur, fmtDate, todayIso, esc, el, parseAmount } from '../util.js';
 
 let month = currentMonth();
 
@@ -27,9 +27,13 @@ export function renderMonth(root) {
   root.appendChild(el(`
   <div class="month-view">
     <div class="month-nav">
-      <button class="nav-btn" data-shift="-1">‹</button>
       <h2>${monthLabel(month)}</h2>
-      <button class="nav-btn" data-shift="1">›</button>
+      <div class="month-carousel">
+        ${Array.from({ length: 9 }, (_, i) => {
+          const m = shiftMonth(month, i - 4);
+          return `<button class="mon-chip${i === 4 ? ' active' : ''}" data-month="${m}">${monthShort(m)}</button>`;
+        }).join('')}
+      </div>
     </div>
 
     <div class="columns">
@@ -60,8 +64,8 @@ export function renderMonth(root) {
 
       <div class="settle-result">
         ${total === 0 ? '<p class="muted">Zatiaľ žiadne výdavky.</p>'
-          : paysS > 0.005 ? `<p><strong>${esc(people.S)}</strong> doplatí <strong class="owe">${eur(paysS)}</strong> pre ${esc(people.M)}</p>`
-          : paysM > 0.005 ? `<p><strong>${esc(people.M)}</strong> doplatí <strong class="owe">${eur(paysM)}</strong> pre ${esc(people.S)}</p>`
+          : paysS > 0.005 ? `<p><strong>${esc(people.S)}</strong> doplatí <strong class="owe">${eur(paysS)}</strong></p>`
+          : paysM > 0.005 ? `<p><strong>${esc(people.M)}</strong> doplatí <strong class="owe">${eur(paysM)}</strong></p>`
           : '<p>Vyrovnané, nikto nič nedopláca. 🎉</p>'}
         ${locked
           ? `<p class="settled">✅ Vyplatené${settlement.settledAt === 'unknown' ? '' : ' ' + fmtDate(settlement.settledAt)}
@@ -97,11 +101,13 @@ export function renderMonth(root) {
     </section>`;
   }
 
-  // --- navigácia mesiacov ---
-  root.querySelectorAll('.nav-btn').forEach(b => b.addEventListener('click', () => {
-    month = shiftMonth(month, +b.dataset.shift);
+  // --- navigácia mesiacov (carousel) ---
+  root.querySelectorAll('.mon-chip').forEach(b => b.addEventListener('click', () => {
+    month = b.dataset.month;
     rerender(root);
   }));
+  const activeChip = root.querySelector('.mon-chip.active');
+  if (activeChip) activeChip.scrollIntoView({ inline: 'center', block: 'nearest' });
 
   // --- pridávanie ---
   root.querySelectorAll('.add-row').forEach(form => {

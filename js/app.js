@@ -27,7 +27,7 @@ function showLogin(message) {
   root.innerHTML = '';
   const form = el(`
     <form class="login card">
-      <h2>💶 Lovky</h2>
+      <h2>💶 Financie</h2>
       <p class="muted">Prihlás sa pre prístup k výdavkom.</p>
       <input name="email" type="text" placeholder="Meno" autocomplete="username" required>
       <input name="password" type="password" placeholder="Heslo" autocomplete="current-password" required>

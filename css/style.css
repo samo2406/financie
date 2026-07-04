@@ -93,22 +93,37 @@ main { max-width: 1100px; margin: 0 auto; padding: 20px; }
 /* --- mesiac --- */
 .month-nav {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
+  gap: 12px;
   margin-bottom: 20px;
 }
-.nav-btn {
+.month-carousel {
+  display: flex;
+  gap: 6px;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 4px;
+  scrollbar-width: thin;
+}
+.mon-chip {
+  flex: 0 0 auto;
   background: var(--surface2);
   border: 1px solid var(--border);
-  color: var(--text);
-  font-size: 20px;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
+  color: var(--muted);
+  padding: 6px 12px;
+  border-radius: 20px;
   cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
 }
-.nav-btn:hover { background: var(--accent); color: #0b1520; }
+.mon-chip:hover { color: var(--text); border-color: var(--accent); }
+.mon-chip.active {
+  background: var(--accent);
+  color: #0b1520;
+  border-color: var(--accent);
+  font-weight: 600;
+}
 
 .columns {
   display: grid;
@@ -312,7 +327,20 @@ table.full td, table.full th { padding: 8px 12px; }
   align-items: end;
 }
 .settings-row label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); }
-.ratio-box input { width: 70px; text-align: right; }
+
+.ratio-slider { max-width: 460px; }
+.ratio-ends {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+.ratio-ends b { color: var(--accent); font-variant-numeric: tabular-nums; }
+.ratio-slider input[type=range] {
+  width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
 
 .cat-row, .merchant-row {
   display: flex;

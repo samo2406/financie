@@ -54,6 +54,8 @@ async function renderAuthBar() {
   const bar = document.getElementById('auth-bar');
   const email = await db.currentEmail();
   const who = email.replace(/@financie\.local$/, '');
+  // téma podľa prihláseného účtu: macka → girlypop, inak Midnight
+  document.body.classList.toggle('theme-girly', /^(macka|marcel)/i.test(who));
   bar.innerHTML = `<span class="who">${esc(who)}</span>
     <button id="refresh" title="Načítať najnovšie dáta">🔄</button>
     <button id="logout">Odhlásiť</button>`;

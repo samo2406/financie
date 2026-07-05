@@ -386,3 +386,55 @@ table.full td, table.full th { padding: 8px 12px; }
 .muted { color: var(--muted); }
 .center { text-align: center; }
 .error { color: var(--danger); text-align: center; padding: 40px; }
+
+/* =========================================================
+   GIRLYPOP — mačacia téma pre Marcelku (body.theme-girly)
+   ========================================================= */
+body.theme-girly {
+  --bg: #ffeef6;
+  --surface: #ffffff;
+  --surface2: #ffe0ee;
+  --border: #ffc4de;
+  --text: #4a2338;
+  --muted: #b06a89;
+  --accent: #ff4fa3;
+  --accent-ink: #ffffff;
+  --danger: #e5397d;
+  --ok: #2fb27a;
+  --sam: #6aa8ff;
+  --mar: #ff5fa8;
+  --radius: 20px;
+  /* jemné labky na pozadí */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='%23ff8fc7' fill-opacity='0.13'%3E%3Cellipse cx='32' cy='37' rx='8' ry='6.5'/%3E%3Ccircle cx='22' cy='26' r='3.2'/%3E%3Ccircle cx='31' cy='22' r='3.2'/%3E%3Ccircle cx='40' cy='24' r='3.2'/%3E%3Ccircle cx='48' cy='30' r='3'/%3E%3C/g%3E%3C/svg%3E");
+  background-attachment: fixed;
+}
+
+/* akcentové tlačidlá potrebujú biely text na ružovej */
+body.theme-girly button.primary,
+body.theme-girly #tabs button.active,
+body.theme-girly .mon-chip.active { color: #fff; }
+body.theme-girly button.primary {
+  background: linear-gradient(120deg, #ff5fa8, #ff97cf);
+  border-radius: 20px;
+}
+body.theme-girly .mon-chip.active { background: linear-gradient(120deg, #ff5fa8, #ff97cf); }
+
+/* mačička k názvu */
+body.theme-girly header h1::after { content: " 🐱"; }
+
+/* avatary s mačacími uškami */
+body.theme-girly .av { color: #fff; overflow: visible; position: relative; }
+body.theme-girly .av::before,
+body.theme-girly .av::after {
+  content: ''; position: absolute; top: -3px;
+  width: 0; height: 0;
+  border-left: 4px solid transparent; border-right: 4px solid transparent;
+  border-bottom: 7px solid var(--mar);
+}
+body.theme-girly .av-S::before, body.theme-girly .av-S::after { border-bottom-color: var(--sam); }
+body.theme-girly .av::before { left: 3px; transform: rotate(-18deg); }
+body.theme-girly .av::after { right: 3px; transform: rotate(18deg); }
+
+/* zaoblenejšie karty a mäkký ružový tieň */
+body.theme-girly .card { box-shadow: 0 2px 4px rgba(255,90,160,.06), 0 12px 30px rgba(255,90,160,.09); }
+body.theme-girly input:focus, body.theme-girly select:focus { outline-color: var(--accent); }
